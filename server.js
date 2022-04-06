@@ -12,7 +12,7 @@ const server = new ApolloServer({
 
     if (authorization) {
       const { id } = jwt.verify(authorization, process.env.JWT_SECRET);
-      console.log('ran');
+      console.log('ran', id);
       return { id };
     }
   },

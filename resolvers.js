@@ -18,6 +18,31 @@ const resolvers = {
         where: { id: { not: id } },
       });
     },
+
+    getMessages: async (_, { id }, { id: userId }) => {
+      if (!userId) throw new ForbiddenError('Not Authorized');
+
+      const messages = await prisma.message.findMany({
+        where: {
+          OR: [
+            {
+              senderId: userId,
+              receiverId: id,
+            },
+            {
+              senderId: id,
+              receiverId: userId,
+            },
+          ],
+        },
+
+        orderBy: {
+          createdAt: "asc"
+        }
+      });
+
+      return messages;
+    },
   },
 
   Mutation: {
@@ -55,6 +80,20 @@ const resolvers = {
       });
 
       return { token };
+    },
+
+    createMessage: async (_, { receiverId, text }, { id }) => {
+      if (!id) throw new ForbiddenError('NOt authorized!');
+      console.log('in mutation', id);
+      const message = await prisma.message.create({
+        data: {
+          text,
+          senderId: id,
+          receiverId,
+        },
+      });
+
+      return message;
     },
   },
 };
