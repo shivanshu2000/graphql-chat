@@ -5,9 +5,12 @@ import {
   ForbiddenError,
 } from 'apollo-server';
 import bcrypt from 'bcryptjs';
+import { PubSub } from 'graphql-subscriptions';
 import jwt from 'jsonwebtoken';
 
+const pubsub = new PubSub();
 const prisma = new client.PrismaClient();
+const MESSAGE_ADDED = 'MESSAGE_ADDED';
 
 const resolvers = {
   Query: {
@@ -37,8 +40,8 @@ const resolvers = {
         },
 
         orderBy: {
-          createdAt: "asc"
-        }
+          createdAt: 'asc',
+        },
       });
 
       return messages;
@@ -84,7 +87,6 @@ const resolvers = {
 
     createMessage: async (_, { receiverId, text }, { id }) => {
       if (!id) throw new ForbiddenError('NOt authorized!');
-      console.log('in mutation', id);
       const message = await prisma.message.create({
         data: {
           text,
@@ -93,7 +95,16 @@ const resolvers = {
         },
       });
 
+      pubsub.publish(MESSAGE_ADDED, {
+        message: message,
+      });
       return message;
+    },
+  },
+
+  Subscription: {
+    message: {
+      subscribe: () => pubsub.asyncIterator(MESSAGE_ADDED),
     },
   },
 };

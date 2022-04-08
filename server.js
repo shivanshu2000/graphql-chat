@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import typeDefs from './typeDefs.js';
 import resolvers from './resolvers.js';
 
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -12,7 +13,7 @@ const server = new ApolloServer({
 
     if (authorization) {
       const { id } = jwt.verify(authorization, process.env.JWT_SECRET);
-      console.log('ran', id);
+      console.log('userid is', id);
       return { id };
     }
   },
