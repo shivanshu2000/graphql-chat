@@ -79,7 +79,7 @@ const resolvers = {
       if (!matched) throw new AuthenticationError('Invalid email or password');
 
       const token = jwt.sign({ id: exists.id }, process.env.JWT_SECRET, {
-        expiresIn: '2d',
+        expiresIn: process.env.EXPIRES_IN,
       });
 
       return { token };

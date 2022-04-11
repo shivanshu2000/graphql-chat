@@ -1,5 +1,6 @@
-import { ApolloServer, AuthenticationError, gql } from 'apollo-server-express';
+import { ApolloServer, gql } from 'apollo-server-express';
 import jwt from 'jsonwebtoken';
+import { ForbiddenError } from 'apollo-server';
 import express from 'express';
 import typeDefs from './typeDefs.js';
 import resolvers from './resolvers.js';
@@ -25,9 +26,15 @@ const context = ({ req }) => {
   if (req?.headers) {
     const authorization = req.headers['authorization'];
 
-    if (authorization) {
-      const { id } = jwt.verify(authorization, process.env.JWT_SECRET);
-      return { id };
+    console.log('auth is: ', authorization);
+    try {
+      if (authorization) {
+        const token = jwt.verify(authorization, process.env.JWT_SECRET);
+        console.log('token is: ', token);
+        return { id: token.id };
+      }
+    } catch (err) {
+      // throw new ForbiddenError('jwt expired');
     }
   }
 };
@@ -53,6 +60,6 @@ const apolloServer = new ApolloServer({
 await apolloServer.start();
 apolloServer.applyMiddleware({ app, path: '/graphql' });
 
-httpServer.listen(PORT, () => {
+httpServer.listen(4000, () => {
   console.log(' both servers are up');
 });
