@@ -60,6 +60,6 @@ const apolloServer = new ApolloServer({
 await apolloServer.start();
 apolloServer.applyMiddleware({ app, path: '/graphql' });
 
-httpServer.listen(4000, () => {
+httpServer.listen(process.env.PORT, () => {
   console.log(' both servers are up');
 });
